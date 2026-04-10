@@ -1,0 +1,6 @@
+@Neo4JPOC_HostAddress = http://localhost:5081
+
+GET {{Neo4JPOC_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

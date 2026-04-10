@@ -1,0 +1,87 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────
+#  CineGraph — Neo4j Movie POC
+#  Services: neo4j · backend (.NET 10) · frontend (React/nginx)
+#
+#  Usage:
+#    docker compose up --build        # first run
+#    docker compose up -d             # subsequent runs (detached)
+#    docker compose down -v           # stop and remove volumes
+#
+#  Access:
+#    Frontend  →  http://localhost:3000
+#    Backend   →  http://localhost:5081
+#    Neo4j UI  →  http://localhost:7474  (user: neo4j / pass: Password1)
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Neo4j graph database ───────────────────────────────────────
+  neo4j:
+    image: neo4j:5.20-community
+    container_name: cinegraph-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # Neo4j Browser (HTTP)
+      - "7687:7687"   # Bolt protocol
+    environment:
+      NEO4J_AUTH: neo4j/Password1
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_heap_initial__size: 256m
+      NEO4J_dbms_memory_heap_max__size: 512m
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  # ── .NET 10 ASP.NET Core backend ──────────────────────────────
+  backend:
+    build:
+      context: ./Noe4jPOC
+      dockerfile: Dockerfile
+    container_name: cinegraph-backend
+    restart: unless-stopped
+    ports:
+      - "5081:5081"
+    environment:
+      ASPNETCORE_URLS: "http://+:5081"
+      ASPNETCORE_ENVIRONMENT: Production
+      Neo4jSettings__Neo4jConnection: "neo4j://neo4j:7687"
+      Neo4jSettings__Neo4jUser: "neo4j"
+      Neo4jSettings__Neo4jPassword: "Password1"
+      Neo4jSettings__Neo4jDatabase: "neo4j"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5081/api/movies/movies || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # ── React frontend served by nginx ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cinegraph-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:

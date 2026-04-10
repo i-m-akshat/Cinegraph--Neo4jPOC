@@ -1,0 +1,75 @@
+# ──────────────────────────────────────────────
+#  CineGraph — .gitignore
+# ──────────────────────────────────────────────
+
+# ── Node / Frontend ────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/*.local
+
+# ── Environment / Secrets ──────────────────────
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ── .NET / Backend ─────────────────────────────
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+**/launchSettings.json
+
+# ── Visual Studio ──────────────────────────────
+.vs/
+*.rsuser
+*.vsp
+*.vspx
+*.sap
+*.ncb
+*.aps
+
+# ── Rider / JetBrains ──────────────────────────
+.idea/
+*.sln.iml
+
+# ── VS Code ────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+
+# ── Neo4j local data (if running outside Docker)
+neo4j/data/
+neo4j/logs/
+neo4j/import/
+neo4j/plugins/
+
+# ── Docker ─────────────────────────────────────
+docker-compose.override.yml
+
+# ── OS files ───────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ── Logs ───────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Test / Coverage ────────────────────────────
+coverage/
+TestResults/
+*.trx
